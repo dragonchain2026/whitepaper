@@ -2,7 +2,7 @@
 
 ## A Post-Quantum Secure, High-Speed Decentralized Peer-to-Peer Electronic Cash System
 
-**Version**: 1.1  
+**Version**: 1.3  
 **Date**: September 2026  
 **Website**: https://www.dragonchain.cc  
 **GitHub**: https://github.com/dragonchain2026  
@@ -11,7 +11,7 @@
 
 ## Abstract
 
-Dragonchain is a decentralized peer-to-peer electronic cash system based on proof-of-work (PoW) consensus, combining Sugarchain's ultra-fast transaction capabilities with Tidecoin's post-quantum security features. Dragonchain achieves one of the fastest PoW transaction confirmations in the world with 5-second block times, employs the Falcon-512 post-quantum signature algorithm to resist future quantum computer attacks, and realizes true "one-CPU-one-vote" decentralization through the Yespower CPU-friendly mining algorithm. Dragonchain has never conducted an ICO, premine, or private sale — it is a fully fair-launch, community-driven project.
+Dragonchain is a decentralized peer-to-peer electronic cash system based on proof-of-work (PoW) consensus, built on Sugarchain's PoW and difficulty-adjustment parameters (5-second blocks, Yespower, SugarShield-N510), with the signature algorithm replaced by post-quantum secure Falcon-512 (drawing on Tidecoin's post-quantum security approach). Dragonchain achieves one of the fastest PoW transaction confirmations in the world with 5-second block times, employs the Falcon-512 post-quantum signature algorithm to resist future quantum computer attacks, and realizes "one-CPU-one-vote" decentralization through the Yespower CPU-friendly mining algorithm. Dragonchain has never conducted an ICO, premine, or private sale — it is a fully fair-launch, community-driven project.
 
 ---
 
@@ -36,17 +36,17 @@ Dragonchain strictly adheres to Satoshi Nakamoto's "one-CPU-one-vote" principle.
 |-----------|-------|-------|
 | Block Time | 5 seconds | Among the fastest PoW blockchains |
 | Genesis Block Reward | 42.94967296 DRAGON | Genesis block only |
-| Initial Period Reward | 3.32988658 DRAGON | First 6 months (blocks 0–3,153,600) |
+| Initial Period Reward | 3.32988658 DRAGON | First 6 months (blocks 1–3,153,599) |
 | Standard Block Reward | 0.20807311 DRAGON | After 6 months, halving every 4 years |
 | Halving Interval | 25,228,800 blocks (~4 years) | |
 | Total Supply | 21,000,000 DRAGON | Equivalent to Bitcoin's total |
 | Genesis Time | 2026-05-04 21:20:00 CST | Unix timestamp: 1777900800 |
 | PoW Algorithm | Yespower 1.0.1 | CPU-friendly |
 | Signature Algorithm | Falcon-512 | Lattice-based post-quantum cryptography |
-| Address Format | Bech32m (dragon1...) | Native SegWit |
+| Address Format | Bech32 (dragon1...) | Native SegWit |
 | Difficulty Adjustment | SugarShield-N510 | 510-block moving window (~42.5 min) |
 | P2P Port | 29000 | |
-| RPC Port | 29001 | |
+| RPC Port | 28999 | |
 | Premine/ICO/IEO | None | Fully fair launch |
 
 ---
@@ -61,7 +61,7 @@ In December 2020, a photonic quantum computer demonstrated "quantum supremacy" o
 
 ### 3.2 The Falcon-512 Signature Algorithm
 
-Dragonchain employs **Falcon-512** (Fast-Fourier Lattice-based Compact Signatures over NTRU) as its digital signature algorithm. Falcon is an implementation of the lattice-based signature framework introduced by Gentry, Peikert, and Vaikuntanathan in 2008, and has been selected as a finalist in the NIST Post-Quantum Cryptography Standardization process [4].
+Dragonchain employs **Falcon-512** (Fast-Fourier Lattice-based Compact Signatures over NTRU) as its digital signature algorithm. Falcon is an implementation of the lattice-based signature framework introduced by Gentry, Peikert, and Vaikuntanathan in 2008, and was selected by NIST in 2022 as a post-quantum digital signature standard (FIPS 206) [4].
 
 **Core Principles**:
 
@@ -81,9 +81,9 @@ Falcon's security is based on the Short Integer Solution (SIS) problem over NTRU
 
 | Property | Value | Notes |
 |----------|-------|-------|
-| Signature Size | 690 bytes | Much smaller than equivalent RSA |
+| Signature Size | 690 bytes | Padded maximum signature length in the code (the NIST-standard Falcon-512 signature is 666 bytes); larger than RSA/ECDSA, but far smaller than SPHINCS+ and other post-quantum signatures |
 | Public Key Size | 897 bytes | Compact, suitable for embedded devices |
-| Classical Security | ~128 bits | Equivalent to RSA-2048 |
+| Classical Security | ~128 bits | NIST Security Level 1 (equivalent AES-128) |
 | Signing Speed | Thousands/sec | On a common computer |
 | Verification Speed | 5–10x faster than signing | |
 | RAM Usage | <30 KB | Suitable for memory-constrained devices |
@@ -110,7 +110,7 @@ int r = PQCLEAN_FALCON512_CLEAN_crypto_sign_verify(
 );
 ```
 
-Due to Falcon-512's 1281-byte non-standard key structure, it is **incompatible with BIP32 hierarchical deterministic (HD) wallet derivation**. Dragonchain considers this a reasonable trade-off: post-quantum security takes priority over HD convenience.
+Because Falcon-512's private key is 1281 bytes (far larger than Bitcoin secp256k1's 32 bytes), it cannot directly apply BIP32's HD derivation mechanism, which is based on 32-byte private keys; therefore it is **incompatible with BIP32 hierarchical deterministic (HD) wallet derivation**. Dragonchain considers this a reasonable trade-off: post-quantum security takes priority over HD convenience. For mobile wallets, Dragonchain adopts a non-HD approach: a single Falcon-512 private key is backed up and encrypted using a mnemonic, rather than deriving child keys along a derivation path.
 
 ---
 
@@ -121,10 +121,10 @@ Due to Falcon-512's 1281-byte non-standard key structure, it is **incompatible w
 Dragonchain uses **Yespower 1.0.1** as its proof-of-work algorithm [5]. Yespower builds upon scrypt with the following properties:
 
 - **CPU-friendly**: Relatively efficient to compute on current CPUs
-- **GPU-unfriendly**: Relatively inefficient on current GPUs
-- **FPGA/ASIC-neutral**: Not particularly suited to any specialized hardware
+- **Relatively GPU-unfriendly**: Relatively inefficient on current GPUs
+- **Limited FPGA/ASIC advantage**: Compared to SHA-256 mining, the efficiency advantage of specialized hardware is markedly smaller, though not fully immune
 
-This design ensures mining power is distributed across a wide range of general-purpose computing devices, realizing the "one-CPU-one-vote" decentralization ideal.
+This design tends to distribute mining power across a wide range of general-purpose computing devices, approaching the "one-CPU-one-vote" decentralization ideal.
 
 **PoW Verification Flow**:
 
@@ -145,7 +145,7 @@ The lower powLimit enables:
 
 ### 4.2 Difficulty Adjustment Algorithm: SugarShield-N510
 
-Dragonchain adopts the **SugarShield-N510** difficulty adjustment algorithm (DAA), based on Zcash's improvement of Digishield, using a **510-block** (~42.5 minutes) moving average window.
+Dragonchain adopts the **SugarShield-N510** difficulty adjustment algorithm (DAA), which originates from Sugarchain (based on Zcash's improvement of Digishield), using a **510-block** (~42.5 minutes) moving average window.
 
 **Core Formula**:
 
@@ -167,12 +167,12 @@ Where T = 5 (target block time in seconds), N = 510 (window size)
 | DAA Stable Start | Block 512 | |
 
 **Attack Resistance**:
-- Future Time Limit (FTL) prevents timestamp attacks: blocks with timestamps more than 60 seconds ahead of the current chain tip are rejected
-- Node time deviation from standard network time must not exceed 70 seconds, or the node will be banned from the network
+- Future Time Limit (FTL) prevents timestamp attacks: blocks whose timestamp exceeds the local network adjusted time (nAdjustedTime) by 60 seconds are rejected
+- When the median peer time offset exceeds 70 seconds, the node ignores that peer's time data (zeroing the time offset) and logs a warning, not adopting that time source
 
 ### 4.3 Longest Chain Consensus
 
-Dragonchain follows Nakamoto consensus with the longest-chain rule: nodes always consider the chain with the most accumulated proof-of-work as the correct chain, and continue to extend it. When two nodes broadcast different versions of the next block simultaneously, nodes process the first received block but retain the other branch. When the next proof-of-work is found, the chain with the most accumulated work wins and becomes the longest branch; most nodes on the network will then switch to that branch.
+Dragonchain follows Nakamoto consensus with the longest-chain rule: nodes always consider the chain with the most accumulated proof-of-work as the correct chain, and continue to extend it. When two nodes broadcast different versions of the next block simultaneously, nodes process the first received block but retain the other branch. When the next proof-of-work is found, the chain with the most accumulated work wins and becomes the longest branch; most nodes on the network will then switch to that branch. Because the 5-second block time is extremely short, block propagation delay and the orphan rate are higher than on 10-minute chains; the actual average block time is slightly above 5 seconds, and forks and reorganizations occur more easily under hash-rate fluctuations.
 
 ---
 
@@ -188,11 +188,11 @@ Dragonchain's total supply is strictly limited to **21,000,000 DRAGON**, matchin
 Phase 1 (Genesis, Block 0):
   Reward = 42.94967296 DRAGON (= 2³² / 10⁸)
 
-Phase 2 (Initial Period, Blocks 1–3,153,600, ~6 months):
+Phase 2 (Initial Period, Blocks 1–3,153,599, ~6 months):
   Reward = 3.32988658 DRAGON/block
-  Total = 10,500,000 DRAGON
+  Total ≈ 10,500,000 DRAGON (about half the supply)
 
-Phase 3 (Standard, Blocks 3,153,601+):
+Phase 3 (Standard, Blocks 3,153,600 onward):
   Reward = 0.20807311 DRAGON/block
   Halving every 25,228,800 blocks (~4 years)
   64 halving cycles → reward eventually reaches zero
@@ -201,7 +201,7 @@ Phase 3 (Standard, Blocks 3,153,601+):
 **Total Supply Calculation**:
 ```
 Total Supply = 42.94967296 + 10,500,000 + Σ(n=0→63) 25,228,800 × 0.20807311 / 2^n
-             = 42.94967296 + 10,500,000 + 10,499,957.05032704
+             ≈ 42.94967296 + 10,500,000 + 10,498,870
              ≈ 21,000,000 DRAGON
 ```
 
@@ -210,12 +210,14 @@ Total Supply = 42.94967296 + 10,500,000 + Σ(n=0→63) 25,228,800 × 0.20807311 
 Dragonchain employs a **front-loaded issuance** strategy:
 - **First 6 months**: Half of the total supply (10,500,000 DRAGON) is released, rapidly establishing circulation
 - **After 6 months**: Standard 4-year halving cycle, gradually releasing the remainder
-- **~256 years later**: All DRAGON will have been mined
+- **~256 years later** (theoretical value assuming strict 5-second block times): All DRAGON will have been mined
 
 Advantages of this design:
 1. Early miners receive sufficient incentive to participate in network building
 2. Rapidly established liquidity facilitates exchange listings and payment application integration
 3. Long-term halving mechanism maintains sustained scarcity
+
+The trade-off to weigh: front-loaded issuance gives early participants significantly higher rewards (3.33 DRAGON/block initially, dropping to roughly 0.208 DRAGON/block thereafter, a ~16x drop), so later miners face clearly reduced incentives, and this pattern carries some tension with a "fully fair launch" — it is a deliberate design trade-off, not a pure advantage.
 
 ### 5.3 Comparison with Bitcoin Economic Model
 
@@ -223,7 +225,7 @@ Advantages of this design:
 |-----------|---------|-------------|
 | Total Supply | 21,000,000 BTC | 21,000,000 DRAGON |
 | Block Time | 10 minutes | 5 seconds |
-| Initial Reward | 50 BTC | 3.33 DRAGON |
+| Initial Reward | 50 BTC | 3.33 DRAGON (42.95 in genesis block) |
 | Halving Interval | 210,000 blocks (~4 years) | 25,228,800 blocks (~4 years) |
 | Halving Count | 33 | 64 |
 | Fully Mined | ~2140 CE | ~2282 CE |
@@ -233,29 +235,29 @@ Advantages of this design:
 
 ## 6. Addresses and Transactions
 
-### 6.1 Bech32m Address Format
+### 6.1 Bech32 Address Format
 
-Dragonchain uses **Bech32m encoding** (BIP350) for Native SegWit addresses by default, in the format:
+Dragonchain uses **Bech32 encoding** (BIP173) for Native SegWit addresses by default, in the format:
 
 ```
-dragon1qvazfa2ssu47wes89390sl0jz6g05h0267u8g
+dragon1q8e0znwfry08evlqxkawgpl2pfashr8ceg9wfw3
 ```
 
 **Address Decomposition**:
 - `dragon`: Human-Readable Part (HRP), identifies the Dragonchain network
 - `1`: Separator
 - `q`: Witness version (v0)
-- `vazfa2ssu47wes89390sl0jz6g05h0`: Witness program (Base32-encoded)
-- `267u8g`: Checksum (6-character BCH code)
+- `8e0znwfry08evlqxkawgpl2pfashr8ce`: Witness program (32 characters, Base32-encoded 20-byte program)
+- `g9wfw3`: Checksum (6-character BCH code)
 
 **Legacy vs. Native SegWit**:
 
-| Feature | Legacy (Base58) | Bech32m (Native SegWit) |
+| Feature | Legacy (Base58) | Bech32 (Native SegWit) |
 |---------|-----------------|------------------------|
 | Example Address | S... | dragon1... |
 | Case Sensitivity | Case-sensitive | Case-insensitive |
 | QR Code Efficiency | Low | High |
-| Error Detection | Moderate | Excellent (detection + correction) |
+| Error Detection | Moderate | Excellent (highly reliable detection) |
 | Transaction Fees | Higher | Lower |
 
 Legacy address prefixes: public key addresses begin with `S`, script hash addresses begin with `s`.
@@ -292,9 +294,11 @@ Dragonchain uses a fully distributed peer-to-peer network topology without super
 
 | Metric | Current | Daily Growth |
 |--------|---------|-------------|
-| Block Count | 635,000+ | ~21,000 blocks/day |
-| Blockchain Size | ~234 MB | ~8 MB/day |
-| Annual Growth | — | ~2.9 GB/year |
+| Block Count | ~2,034,000+ | ~15,700 blocks/day |
+| Blockchain Size | ~1.8 GB | ~14 MB/day |
+| Annual Growth | — | ~5.1 GB/year |
+
+Note: Falcon-512 signatures (690 bytes) plus public keys (897 bytes) make per-transaction key and signature sizes far larger than Bitcoin's ECDSA (~71-byte signature + 33-byte public key). The figures above are estimates under the current low transaction load; as transaction volume rises, storage and bandwidth requirements will grow significantly beyond this linear estimate.
 
 ---
 
@@ -308,8 +312,8 @@ Dragonchain's post-quantum security levels:
 |-----------------|:---:|:---:|
 | Classical Computer Attack | Secure (128-bit) | Secure (~128-bit equivalent) |
 | Shor's Algorithm (Quantum) | **Completely Broken** | **Secure** (no known efficient quantum solver for lattice problems) |
-| Grover's Algorithm (Quantum) | Security halved (64-bit) | N/A (not applicable to lattice problems) |
-| Side-Channel Attacks | Implementation-dependent | Implementation-dependent (equivalent level) |
+| Grover's Algorithm (Quantum) | N/A (Grover does not target signature algorithms; however PoW hash difficulty is affected by Grover, with security reduced to roughly the square root) | Signature security is unaffected; however its SHAKE hash component likewise experiences Grover square-root-level acceleration |
+| Side-Channel Attacks | Implementation-dependent | Implementation-dependent; Falcon requires stronger side-channel protection than ECDSA due to floating-point FFT/sampling steps, and needs a constant-time implementation |
 
 ---
 
@@ -325,11 +329,13 @@ Dragonchain's post-quantum security levels:
 
 ## 10. Conclusion
 
-Dragonchain fuses Sugarchain's ultra-fast transaction capabilities with Tidecoin's post-quantum security features to build a next-generation decentralized electronic cash system that excels in both speed and security.
+Dragonchain builds on Sugarchain's PoW and difficulty-adjustment parameters, replacing the signature algorithm with post-quantum secure Falcon-512 (drawing on Tidecoin's post-quantum security approach), to build a next-generation decentralized electronic cash system that excels in both speed and security.
 
 Through 5-second block times, Falcon-512 post-quantum signatures, Yespower CPU-friendly mining, and the SugarShield-N510 difficulty adjustment algorithm, Dragonchain achieves systematic innovation in transaction speed, quantum security, decentralization, and economic model sustainability.
 
 As a fully community-driven, fair-launch project with no premine and no ICO, Dragonchain is committed to becoming a trusted decentralized payment infrastructure for users worldwide.
+
+This project has no affiliation with Disney's Dragonchain (dragonchain.com, token DRGN); the similarity in name is purely coincidental.
 
 ---
 
